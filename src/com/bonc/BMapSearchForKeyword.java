@@ -52,21 +52,21 @@ public class BMapSearchForKeyword {
 //			e.printStackTrace();
 //		}
 		
-		List<String> areaList = bsfk.areaList();
+		List<String[]> areaList = bsfk.areaList();
 		List<String[]> poiList = bsfk.poiList();
 		
 		for(String[] poi:poiList){
-			for(String area:areaList){
-				DownloadBD dd = new DownloadBD(poi[1],poi[0],area,"");
+			for(String[] area:areaList){
+				DownloadBD dd = new DownloadBD(poi[1],poi[0],area[0],"");
 		        try{
-		        	String regioncode = dd.getCityCode(area);
+		        	String regioncode = dd.getCityCode(area[0]);
 		            String res = dd.getTotalPoiForKeyWord();
 		            if(StringUtils.isNotBlank(res)&&StringUtils.isNotBlank(regioncode)){
-		            	System.out.println(area+"  查询【"+poi[0]+"-"+poi[1]+"】数据返回总量："+res);
+		            	System.out.println(area[0]+"  查询【"+poi[0]+"-"+poi[1]+"】数据返回总量："+res);
 		            	if(checkPoiTotalIsExist(poi[1],regioncode)){
-		            		insertBMapSearchPoiTotal(poi[1],area,regioncode,res);
+		            		insertBMapSearchPoiTotal(poi[0],poi[1],area,regioncode,res);
 		            	}else{
-		            		updateBMapSearchPoiTotal(poi[1],area,regioncode,res);
+		            		updateBMapSearchPoiTotal(poi[0],poi[1],area,regioncode,res);
 		            	}
 		            }
 		        }catch (Exception e){
@@ -76,13 +76,13 @@ public class BMapSearchForKeyword {
 		}
 	}
     
-	private static void insertBMapSearchPoiTotal(String poi, String area, String regioncode, String res) {
+	private static void insertBMapSearchPoiTotal(String firstpoi,String secondpoi, String[] area, String regioncode, String res) {
 		Connection bizConn=null;
 		PreparedStatement ps = null;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
-			ps=bizConn.prepareStatement("insert into map_poisearch_total(keyword,regionname,regioncode,total) values ('"+poi+"','"+area+"','"+regioncode+"','"+res+"')");
+			ps=bizConn.prepareStatement("insert into map_poisearch_total(keyword,regionname,regioncode,total,bounds,stepnum,wd2name) values ('"+secondpoi+"','"+area[0]+"','"+regioncode+"','"+res+"','"+area[1]+"','"+area[2]+"','"+firstpoi+"')");
 			ps.execute();
 			ps.close();
 			ps = null;
@@ -103,13 +103,13 @@ public class BMapSearchForKeyword {
 		}
 	}
 	
-	private static void updateBMapSearchPoiTotal(String poi, String area, String regioncode, String res) {
+	private static void updateBMapSearchPoiTotal(String firstpoi,String secondpoi, String[] area, String regioncode, String res) {
 		Connection bizConn=null;
 		PreparedStatement ps = null;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
-			ps=bizConn.prepareStatement("update map_auto.map_poisearch_total set total='"+res+"' where keyword='"+poi+"' and regioncode='"+regioncode+"'");
+			ps=bizConn.prepareStatement("update map_auto.map_poisearch_total set total='"+res+"',bounds='"+area[1]+"',stepnum='"+area[2]+"' where keyword='"+secondpoi+"' and regioncode='"+regioncode+"'");
 			ps.execute();
 			ps.close();
 			ps = null;
@@ -650,18 +650,22 @@ public class BMapSearchForKeyword {
         return jpoint;
     }
 	
-	public List<String> areaList(){
-		List<String> list = new ArrayList<String>();
+	public List<String[]> areaList(){
+		List<String[]> list = new ArrayList<String[]>();
 		Connection bizConn=null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
-			ps=bizConn.prepareStatement("select area_name from map_auto.map_areainfo where area_level='3' order by area_code asc");
+			ps=bizConn.prepareStatement("select area_name,bounds,stepnum from map_auto.map_areainfo where area_level='3' order by area_code asc");
 			rs = ps.executeQuery();
 			while (rs.next()) {
-				list.add(rs.getString(1));
+				String[]  str = new String[3];
+				str[0]=rs.getString(1);
+				str[1]=rs.getString(2);
+				str[2]=rs.getString(3);
+				list.add(str);
 			}
 			if (rs != null) {
 				rs.close();

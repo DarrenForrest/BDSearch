@@ -11,9 +11,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -205,7 +207,7 @@ public class BMapSearch {
 					        JSONObject obj = JSONObject.parseObject(jsonStr);
 					        JSONArray content = (JSONArray) obj.get("results");
 					        if(content == null || content.isEmpty()){
-					        	System.out.println("矩形区域第"+(recti+1)+"划分区域【"+smallRect+"】第"+(pageNum+1)+"页未检索到POI数据，程序退出");
+					        	//System.out.println("矩形区域第"+(recti+1)+"划分区域【"+smallRect+"】第"+(pageNum+1)+"页未检索到POI数据，程序退出");
 					        	list.add("矩形区域子区域未检索到POI数据:"+(recti)+"||"+smallRect+"||"+(pageNum));
 					        	flag = true;
 					        	break;
@@ -243,7 +245,7 @@ public class BMapSearch {
 					            	jpoint = downloadShape(uid,jpoint);
 					            	list.add(jpoint.toJSONString());
 					            	resList.add(jpoint.toJSONString());
-					            	System.out.println(jpoint.toJSONString());
+					            	//System.out.println(jpoint.toJSONString());
 						        }
 					        }
 					        Thread.sleep(1000);
@@ -280,7 +282,7 @@ public class BMapSearch {
 			        JSONObject obj = JSONObject.parseObject(jsonStr);
 			        JSONArray content = (JSONArray) obj.get("results");
 			        if(content == null || content.isEmpty()){
-			        	System.out.println("矩形区域第"+(recti+1)+"划分区域【"+smallRect+"】第"+(pageNum+1)+"页未检索到POI数据，程序退出");
+			        	//System.out.println("矩形区域第"+(recti+1)+"划分区域【"+smallRect+"】第"+(pageNum+1)+"页未检索到POI数据，程序退出");
 			        	list.add("矩形区域子区域未检索到POI数据:"+(recti)+"||"+smallRect+"||"+(pageNum));
 			        	flag = true;
 			        	break;
@@ -318,17 +320,13 @@ public class BMapSearch {
 			            	jpoint = downloadShape(uid,jpoint);
 			            	list.add(jpoint.toJSONString());
 			            	resList.add(jpoint.toJSONString());
-			            	System.out.println(jpoint.toJSONString());
+			            	//System.out.println(jpoint.toJSONString());
 				        }
 			        }
 			        Thread.sleep(1000);
 				}
 				if(resList.size()>0){
-					try{
-						tnSavePoiSearchRecord(listRecord,smallRect,pageNum,resList.size(),"AK");
-					}catch(Exception ex){
-						ex.printStackTrace();
-					}
+					tnSavePoiSearchRecord(listRecord,smallRect,pageNum,resList.size(),"AK");
 				}
 				if(flag){
 					break;
@@ -344,18 +342,25 @@ public class BMapSearch {
 	private void tnSavePoiSearchRecord(List<String[]> listRecord, String smallRect, int pageNum, int size,
 			String searchType) {
 		Connection bizConn=null;
-		PreparedStatement ps=null;
+		Statement ps=null;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
+			Properties props = new Properties();
+			props.put("user","map_auto");
+            props.put("password","MAP_AUTO") ;
+            props.put("oracle.net.CONNECT_TIMEOUT","10000000");
+            props.put("oracle.jdbc.ReadTimeout","20000" );
 			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
+			bizConn.setAutoCommit(false);
 			String str="insert into map_poisearch_record(FIRSTPOI,SECONDPOI,REGIONNAME,REGIONCODE,AREACODE,BOUNDS,STEPNUM,SMALLBOUNDS,PAGENUM,SEARCHRESULT,SEARCHTYPE,CREATETIME) values "
 					+ "('"+listRecord.get(0)[0]+"','"+listRecord.get(0)[1]+"',"
 							+ "'"+listRecord.get(0)[2]+"','"+listRecord.get(0)[3]+"','"+listRecord.get(0)[4]+"',"
 									+ "'"+listRecord.get(0)[5]+"','"+listRecord.get(0)[6]+"',"
 											+ "'"+smallRect+"','"+pageNum+"','"+size+"','"+searchType+"',sysdate)";
-			System.out.println(str);
-			ps=bizConn.prepareStatement(str);
-			ps.execute();
+			//System.out.println(str);
+			ps = bizConn.createStatement();
+			ps.execute(str);
+			bizConn.commit();
 			if (ps != null) {
 				ps.close();
 				ps = null;
@@ -386,11 +391,17 @@ public class BMapSearch {
 		CallableStatement cs=null;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
-			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
+			Properties props = new Properties();
+			props.put("user","map_auto");
+            props.put("password","MAP_AUTO") ;
+            props.put("oracle.net.CONNECT_TIMEOUT","10000000");
+            props.put("oracle.jdbc.ReadTimeout","10000" );
+			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi",props);
 			String str="{call dealpoisearchaknum(?)}";
 			cs=bizConn.prepareCall(str);
-			cs.setString(1, ak);
+			cs.setString(1,ak);
 			cs.execute();
+			bizConn.commit();
 			if (cs != null) {
 				cs.close();
 				cs = null;
@@ -422,7 +433,12 @@ public class BMapSearch {
 		int n=0;
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
-			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi","map_auto","MAP_AUTO");
+			Properties props = new Properties();
+            props.put("user","map_auto");
+            props.put("password","MAP_AUTO") ;
+            props.put("oracle.net.CONNECT_TIMEOUT","10000000");
+            props.put("oracle.jdbc.ReadTimeout","10000" );
+			bizConn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.100.123:1521:sxmbi",props);
 			ps=bizConn.prepareStatement("select searchno from map_poisearch_aknum where ak='"+ak+"' and createdate=to_char(sysdate,'yyyy-MM-dd')");
 			rs = ps.executeQuery();
 			while (rs.next()) {

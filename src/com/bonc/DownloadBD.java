@@ -95,12 +95,23 @@ public class DownloadBD {
                     break;
                 }
             }
-
-            JSONObject obj = JSONObject.parseObject(jsonStr);
+//            if(StringUtils.isNotBlank(jsonStr)){
+//	        	jsonStr = jsonStr.replaceAll("\\\\舒", "舒").replaceAll("\\\\无", "无");
+//	        }
+            JSONObject obj = null;
+            try{
+            	obj = JSONObject.parseObject(jsonStr);
+            }catch(Exception ex){
+            	System.out.println(jsonStr);
+            	ex.printStackTrace();
+            }
+            if(obj == null){
+            	break;
+            }
             JSONArray content = (JSONArray) obj.get("content");
             if (content == null) {
                 //百度查询不到
-                System.out.println("百度查询不到POI数据【"+city+"】【"+keyWord+"】【第"+(ii+1)+"页查询】");
+                //System.out.println("百度查询不到POI数据【"+city+"】【"+keyWord+"】【第"+(ii+1)+"页查询】");
                 break;
             }
             JSONArray jarray = new JSONArray();
@@ -190,12 +201,23 @@ public class DownloadBD {
 	                break;
 	            }
 	        }
-	
-	        JSONObject obj = JSONObject.parseObject(jsonStr);
+//	        if(StringUtils.isNotBlank(jsonStr)){
+//	        	jsonStr = jsonStr.replaceAll("\\\\舒", "舒");
+//	        }
+	        JSONObject obj = null;
+	        try{
+            	obj = JSONObject.parseObject(jsonStr);
+            }catch(Exception ex){
+            	System.out.println(jsonStr);
+            	ex.printStackTrace();
+            }
+	        if (obj == null) {
+	           break;
+	        }
 	        JSONArray content = (JSONArray) obj.get("content");
 	        if (content == null) {
 	            //百度查询不到
-	           System.out.println("百度查询不到POI数据【"+cityCode+"】【"+keyWord+"】【第"+(ii+1)+"页查询】");
+	           //System.out.println("百度查询不到POI数据【"+cityCode+"】【"+keyWord+"】【第"+(ii+1)+"页查询】");
 	           break;
 	        }
 //	        JSONArray jarray = new JSONArray();
@@ -277,17 +299,13 @@ public class DownloadBD {
             StringBuffer sb = new StringBuffer();
             String tmpline = "";
             while ((tmpline = br.readLine()) != null) {
-
                 sb.append(tmpline);
             }
-
             inr.close();
             in.close();
-
             //JSONObject obj = JSONObject.parseObject(sb.toString());
             //JSONObject content = obj.getJSONObject("content");
             //cityCode = content.getString("code");
-
             Pattern pattern = Pattern.compile("\"code\":([0-9]+),");
             Matcher matcher = pattern.matcher(sb.toString());
             if (matcher.find()) {

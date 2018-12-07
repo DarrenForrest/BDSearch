@@ -25,21 +25,21 @@ import java.util.Map;
     	
     	
       public static void main(String[] args) { 
-    	  BMapSearchForKeyword bm = new BMapSearchForKeyword();
-  		int i =0;
-  		while(true){
-  			try {
-  				if(i==20){
-  					System.out.println("POI搜索达到最大结果限制 400条数据！搜索结束！");
-  					break;
-  				}
-  				System.out.println(bm.searchBMapInfoByRegionKeyWord("太原市晋源区","殡葬服务",i,"json","mjE3I5xDa9TGWElWGg5p80yfHVuLbItu",true).toString());
-  				i++;
-  				Thread.sleep(1000);
-  			} catch (Exception e) {
-  				e.printStackTrace();
-  			}
-  		}
+//    	  BMapSearchForKeyword bm = new BMapSearchForKeyword();
+//  		int i =0;
+//  		while(true){
+//  			try {
+//  				if(i==20){
+//  					System.out.println("POI搜索达到最大结果限制 400条数据！搜索结束！");
+//  					break;
+//  				}
+//  				System.out.println(bm.searchBMapInfoByRegionKeyWord("太原市晋源区","殡葬服务",i,"json","mjE3I5xDa9TGWElWGg5p80yfHVuLbItu",true).toString());
+//  				i++;
+//  				Thread.sleep(1000);
+//  			} catch (Exception e) {
+//  				e.printStackTrace();
+//  			}
+//  		}
   
 //
 //          String geo = "4|12928784.8679,4580889.0672;12928884.0335,4581026.05389|1-12928784.8679,4581018.53244,12928879.8193,4581026.05389,12928884.0335,4580966.20191,12928847.7346,4580961.14681,12928844.1937,4580957.53999,12928850.7314,4580891.67584,12928791.9678,4580889.0672,12928784.8679,4581018.53244;"; 
@@ -57,10 +57,29 @@ import java.util.Map;
 //              } 
 //          } 
 //          System.out.println(sb.toString()); 
+    	  
+    	  String str="";
+    	  try{
+    		  dealStr(str);
+    		  System.out.println("main后续代码执行");
+    	  }catch(Exception ex){
+    		  System.out.println("main方法中的抛出异常");
+    		  ex.printStackTrace();
+    	  }
       } 
   
  
-      /** 
+      private static void dealStr(String str) {
+		try{
+			System.out.println(Integer.valueOf(str));
+		}catch(Exception ex){
+			System.out.println("处理方法中抛出异常");
+			ex.printStackTrace();
+		}
+	}
+
+
+	/** 
        * 解析Jeo数据 
        * @param mocator 
        */ 

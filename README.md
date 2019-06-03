@@ -11,7 +11,6 @@
       个人认证的ak最多一天可以请求30000次，并发量50次/秒；
       
 应用表说明：
-co_base_station_info：基站基础信息表
 map_areainfo：各地市区县信息表
 map_poisearch_ak：各地市对应百度地图检索POI对应的AK
 map_poisearch_aknum：每天调用百度地图检索POI使用AK请求次数记录表
